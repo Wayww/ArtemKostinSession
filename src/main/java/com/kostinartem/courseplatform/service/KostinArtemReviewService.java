@@ -11,8 +11,10 @@ import com.kostinartem.courseplatform.repository.KostinArtemReviewRepository;
 import com.kostinartem.courseplatform.repository.KostinArtemUserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class KostinArtemReviewService {
@@ -34,7 +36,9 @@ public class KostinArtemReviewService {
         review.setUser(user);
         review.setCourse(course);
 
-        return mapToResponse(reviewRepository.save(review));
+        KostinArtemReview savedReview = reviewRepository.save(review);
+        log.info("Review created: courseId={}, userId={}", course.getId(), user.getId());
+        return mapToResponse(savedReview);
     }
 
     public List<KostinArtemReviewResponseDto> getCourseReviews(Long courseId, Integer rating) {

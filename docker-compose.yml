@@ -1,0 +1,52 @@
+services:
+  app:
+    build: .
+    container_name: artem-kostin-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/online_course_platform
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+  postgres:
+    image: postgres:16
+    container_name: artem-kostin-postgres
+    environment:
+      POSTGRES_DB: online_course_platform
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d online_course_platform"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: artem-kostin-mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+volumes:
+  postgres_data:

@@ -9,6 +9,7 @@ import com.kostinartem.courseplatform.repository.KostinArtemCourseRepository;
 import com.kostinartem.courseplatform.repository.KostinArtemUserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +18,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class KostinArtemCourseService {
@@ -90,7 +92,9 @@ public class KostinArtemCourseService {
         course.setActive(requestDto.getActive());
         course.setTeacher(teacher);
 
-        return mapToResponse(courseRepository.save(course));
+        KostinArtemCourse savedCourse = courseRepository.save(course);
+        log.info("Course created: {}", savedCourse.getTitle());
+        return mapToResponse(savedCourse);
     }
 
     public KostinArtemCourseResponseDto updateCourse(Long id, KostinArtemCourseRequestDto requestDto) {
@@ -108,13 +112,16 @@ public class KostinArtemCourseService {
         course.setActive(requestDto.getActive());
         course.setTeacher(teacher);
 
-        return mapToResponse(courseRepository.save(course));
+        KostinArtemCourse updatedCourse = courseRepository.save(course);
+        log.info("Course updated: id={}", updatedCourse.getId());
+        return mapToResponse(updatedCourse);
     }
 
     public void deleteCourse(Long id) {
         KostinArtemCourse course = courseRepository.findById(id)
                 .orElseThrow(() -> new KostinArtemNotFoundException("Course not found with id: " + id));
         courseRepository.delete(course);
+        log.info("Course deleted: id={}", id);
     }
 
     private KostinArtemCourseResponseDto mapToResponse(KostinArtemCourse course) {

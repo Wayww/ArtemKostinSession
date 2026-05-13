@@ -14,11 +14,13 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class KostinArtemFileService {
@@ -52,8 +54,11 @@ public class KostinArtemFileService {
             fileResource.setSize(file.getSize());
             fileResource.setCourse(course);
 
-            return mapToResponse(fileResourceRepository.save(fileResource));
+            KostinArtemFileResource savedFile = fileResourceRepository.save(fileResource);
+            log.info("File uploaded: {}", savedFile.getFileName());
+            return mapToResponse(savedFile);
         } catch (IOException exception) {
+            log.error("Failed to upload file", exception);
             throw new KostinArtemBadRequestException("Failed to upload file");
         }
     }
@@ -65,11 +70,13 @@ public class KostinArtemFileService {
         try {
             Path filePath = Paths.get(fileResource.getFilePath());
             if (!Files.exists(filePath)) {
+                log.error("File not found on disk: {}", fileResource.getFilePath());
                 throw new KostinArtemNotFoundException("File not found");
             }
 
             return new UrlResource(filePath.toUri());
         } catch (IOException exception) {
+            log.error("Failed to download file with id {}", fileId, exception);
             throw new KostinArtemNotFoundException("File not found");
         }
     }

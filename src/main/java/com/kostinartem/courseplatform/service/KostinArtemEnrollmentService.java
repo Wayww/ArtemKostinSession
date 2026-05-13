@@ -10,8 +10,10 @@ import com.kostinartem.courseplatform.repository.KostinArtemEnrollmentRepository
 import com.kostinartem.courseplatform.repository.KostinArtemUserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class KostinArtemEnrollmentService {
@@ -36,6 +38,7 @@ public class KostinArtemEnrollmentService {
         KostinArtemEnrollment savedEnrollment = enrollmentRepository.save(enrollment);
         asyncService.logEnrollment(userId, courseId);
         asyncService.calculateFakeStatistics(courseId);
+        log.info("User enrolled: userId={}, courseId={}", userId, courseId);
 
         return mapToResponse(savedEnrollment);
     }

@@ -8,12 +8,14 @@ import com.kostinartem.courseplatform.exception.KostinArtemConflictException;
 import com.kostinartem.courseplatform.repository.KostinArtemUserRepository;
 import com.kostinartem.courseplatform.security.KostinArtemJwtService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class KostinArtemAuthService {
@@ -26,6 +28,7 @@ public class KostinArtemAuthService {
 
     public KostinArtemAuthResponseDto register(KostinArtemRegisterRequestDto requestDto) {
         if (userRepository.existsByEmail(requestDto.getEmail())) {
+            log.error("Register failed. Email already exists: {}", requestDto.getEmail());
             throw new KostinArtemConflictException("User with this email already exists");
         }
 
@@ -37,6 +40,7 @@ public class KostinArtemAuthService {
 
         KostinArtemUser savedUser = userRepository.save(user);
         asyncService.sendWelcomeEmail(savedUser.getEmail(), savedUser.getFullName());
+        log.info("User registered: {}", savedUser.getEmail());
 
         User securityUser = new User(savedUser.getEmail(), savedUser.getPassword(), java.util.List.of());
         String token = jwtService.generateToken(securityUser);
@@ -51,6 +55,7 @@ public class KostinArtemAuthService {
 
         KostinArtemUser user = userRepository.findByEmail(requestDto.getEmail())
                 .orElseThrow(() -> new KostinArtemConflictException("User not found"));
+        log.info("User logged in: {}", user.getEmail());
 
         User securityUser = new User(user.getEmail(), user.getPassword(), java.util.List.of());
         String token = jwtService.generateToken(securityUser);
