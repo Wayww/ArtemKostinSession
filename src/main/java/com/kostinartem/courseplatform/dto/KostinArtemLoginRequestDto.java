@@ -8,7 +8,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class KostinArtemAuthRequestDto {
+public class KostinArtemLoginRequestDto {
 
     @Email
     @NotBlank

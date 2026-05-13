@@ -8,7 +8,11 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class KostinArtemAuthRequestDto {
+public class KostinArtemRegisterRequestDto {
+
+    @NotBlank
+    @Size(min = 2, max = 100)
+    private String fullName;
 
     @Email
     @NotBlank
@@ -17,4 +21,7 @@ public class KostinArtemAuthRequestDto {
     @NotBlank
     @Size(min = 6, max = 100)
     private String password;
+
+    @NotBlank
+    private String role;
 }
