@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: online-course-platform
+  datasource:
+    url: jdbc:postgresql://localhost:5432/online_course_platform
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+server:
+  port: 8080
