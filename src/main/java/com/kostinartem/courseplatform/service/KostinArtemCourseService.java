@@ -9,7 +9,13 @@ import com.kostinartem.courseplatform.repository.KostinArtemCourseRepository;
 import com.kostinartem.courseplatform.repository.KostinArtemUserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -18,11 +24,51 @@ public class KostinArtemCourseService {
     private final KostinArtemCourseRepository courseRepository;
     private final KostinArtemUserRepository userRepository;
 
-    public List<KostinArtemCourseResponseDto> getAllCourses() {
-        return courseRepository.findAll()
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
+    public Page<KostinArtemCourseResponseDto> getAllCourses(int page,
+                                                            int size,
+                                                            String sortBy,
+                                                            String direction,
+                                                            String keyword,
+                                                            String category,
+                                                            String level) {
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Specification<KostinArtemCourse> specification = (root, query, criteriaBuilder) -> {
+            var predicate = criteriaBuilder.conjunction();
+
+            if (StringUtils.hasText(keyword)) {
+                String keywordPattern = "%" + keyword.toLowerCase() + "%";
+                predicate = criteriaBuilder.and(
+                        predicate,
+                        criteriaBuilder.or(
+                                criteriaBuilder.like(criteriaBuilder.lower(root.get("title")), keywordPattern),
+                                criteriaBuilder.like(criteriaBuilder.lower(root.get("description")), keywordPattern)
+                        )
+                );
+            }
+
+            if (StringUtils.hasText(category)) {
+                predicate = criteriaBuilder.and(
+                        predicate,
+                        criteriaBuilder.equal(criteriaBuilder.lower(root.get("category")), category.toLowerCase())
+                );
+            }
+
+            if (StringUtils.hasText(level)) {
+                predicate = criteriaBuilder.and(
+                        predicate,
+                        criteriaBuilder.equal(criteriaBuilder.lower(root.get("level")), level.toLowerCase())
+                );
+            }
+
+            return predicate;
+        };
+
+        return courseRepository.findAll(specification, pageable).map(this::mapToResponse);
     }
 
     public KostinArtemCourseResponseDto getCourseById(Long id) {
