@@ -2,6 +2,8 @@
 
 Simple Spring Boot 3.2 Maven project for an Online Course Platform.
 
+# ArtemKostinSession
+
 ## Stack
 
 - Java 17
