@@ -19,6 +19,7 @@ public class KostinArtemEnrollmentService {
     private final KostinArtemEnrollmentRepository enrollmentRepository;
     private final KostinArtemUserRepository userRepository;
     private final KostinArtemCourseRepository courseRepository;
+    private final KostinArtemAsyncService asyncService;
 
     public KostinArtemEnrollmentResponseDto enrollUser(Long userId, Long courseId, String status) {
         KostinArtemUser user = userRepository.findById(userId)
@@ -32,7 +33,11 @@ public class KostinArtemEnrollmentService {
         enrollment.setCourse(course);
         enrollment.setStatus(status);
 
-        return mapToResponse(enrollmentRepository.save(enrollment));
+        KostinArtemEnrollment savedEnrollment = enrollmentRepository.save(enrollment);
+        asyncService.logEnrollment(userId, courseId);
+        asyncService.calculateFakeStatistics(courseId);
+
+        return mapToResponse(savedEnrollment);
     }
 
     public List<KostinArtemEnrollmentResponseDto> getUserEnrollments(Long userId) {

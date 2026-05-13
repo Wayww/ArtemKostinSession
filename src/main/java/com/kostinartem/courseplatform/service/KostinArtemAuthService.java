@@ -22,6 +22,7 @@ public class KostinArtemAuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final KostinArtemJwtService jwtService;
+    private final KostinArtemAsyncService asyncService;
 
     public KostinArtemAuthResponseDto register(KostinArtemRegisterRequestDto requestDto) {
         if (userRepository.existsByEmail(requestDto.getEmail())) {
@@ -35,6 +36,7 @@ public class KostinArtemAuthService {
         user.setRole(requestDto.getRole());
 
         KostinArtemUser savedUser = userRepository.save(user);
+        asyncService.sendWelcomeEmail(savedUser.getEmail(), savedUser.getFullName());
 
         User securityUser = new User(savedUser.getEmail(), savedUser.getPassword(), java.util.List.of());
         String token = jwtService.generateToken(securityUser);
