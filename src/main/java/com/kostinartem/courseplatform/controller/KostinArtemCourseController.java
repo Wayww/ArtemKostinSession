@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -43,18 +44,21 @@ public class KostinArtemCourseController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
     public ResponseEntity<KostinArtemCourseResponseDto> createCourse(
             @Valid @RequestBody KostinArtemCourseRequestDto requestDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(courseService.createCourse(requestDto));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
     public KostinArtemCourseResponseDto updateCourse(@PathVariable Long id,
                                                      @Valid @RequestBody KostinArtemCourseRequestDto requestDto) {
         return courseService.updateCourse(id, requestDto);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
     public ResponseEntity<Void> deleteCourse(@PathVariable Long id) {
         courseService.deleteCourse(id);
         return ResponseEntity.noContent().build();
