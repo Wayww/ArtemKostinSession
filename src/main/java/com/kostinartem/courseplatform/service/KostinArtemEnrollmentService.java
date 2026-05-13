@@ -1,0 +1,54 @@
+package com.kostinartem.courseplatform.service;
+
+import com.kostinartem.courseplatform.dto.KostinArtemEnrollmentResponseDto;
+import com.kostinartem.courseplatform.entity.KostinArtemCourse;
+import com.kostinartem.courseplatform.entity.KostinArtemEnrollment;
+import com.kostinartem.courseplatform.entity.KostinArtemUser;
+import com.kostinartem.courseplatform.exception.KostinArtemNotFoundException;
+import com.kostinartem.courseplatform.repository.KostinArtemCourseRepository;
+import com.kostinartem.courseplatform.repository.KostinArtemEnrollmentRepository;
+import com.kostinartem.courseplatform.repository.KostinArtemUserRepository;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class KostinArtemEnrollmentService {
+
+    private final KostinArtemEnrollmentRepository enrollmentRepository;
+    private final KostinArtemUserRepository userRepository;
+    private final KostinArtemCourseRepository courseRepository;
+
+    public KostinArtemEnrollmentResponseDto enrollUser(Long userId, Long courseId, String status) {
+        KostinArtemUser user = userRepository.findById(userId)
+                .orElseThrow(() -> new KostinArtemNotFoundException("User not found with id: " + userId));
+
+        KostinArtemCourse course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new KostinArtemNotFoundException("Course not found with id: " + courseId));
+
+        KostinArtemEnrollment enrollment = new KostinArtemEnrollment();
+        enrollment.setUser(user);
+        enrollment.setCourse(course);
+        enrollment.setStatus(status);
+
+        return mapToResponse(enrollmentRepository.save(enrollment));
+    }
+
+    public List<KostinArtemEnrollmentResponseDto> getUserEnrollments(Long userId) {
+        return enrollmentRepository.findByUserId(userId)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    private KostinArtemEnrollmentResponseDto mapToResponse(KostinArtemEnrollment enrollment) {
+        KostinArtemEnrollmentResponseDto dto = new KostinArtemEnrollmentResponseDto();
+        dto.setId(enrollment.getId());
+        dto.setStatus(enrollment.getStatus());
+        dto.setEnrolledAt(enrollment.getEnrolledAt());
+        dto.setUserId(enrollment.getUser().getId());
+        dto.setCourseId(enrollment.getCourse().getId());
+        return dto;
+    }
+}
